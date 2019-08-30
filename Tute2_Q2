@@ -1,0 +1,72 @@
+/*
+ ============================================================================
+ * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
+ * @brief   Basic C++ demo
+ *
+ *  Created on: 10/1/2016
+ *      Author: podonoghue
+ ============================================================================
+ */
+#include "hardware.h"
+#include <cstdlib>
+#include <stdlib.h>
+#include <time.h>
+// Allow access to USBDM methods without USBDM:: prefix
+using namespace USBDM;
+using namespace std;
+/**
+ * See more examples in Snippets directory
+ */
+
+// LED connection - change as required
+using Led    = GpioC<0>;
+using Switch = GpioC<1,ActiveLow>;
+
+int main() {
+   console.writeln("Starting\n");
+   console.write("SystemCoreClock = ").writeln(SystemCoreClock);
+   console.write("SystemBusClock  = ").writeln(SystemBusClock);
+
+   Led::setOutput(
+	         PinDriveStrength_Low,
+	         PinDriveMode_PushPull,
+	         PinSlewRate_Fast);
+   Switch::setInput(
+		   	 PinPull_Up,
+			 PinAction_None,
+			 PinFilter_None);
+   int count=0;
+   srand(time(NULL));
+   while (true)
+   {
+
+	   int random;
+	   random= rand() % 5 +3;
+	   Led::off();
+	   bool isCheating = false;
+	   count =0 ;
+	   while ((!isCheating) && (count < random*1000))
+	   {
+		   ++count;
+		   if (Switch::isPressed())
+		   {
+			   isCheating = true;
+			   console.writeln("You are cheating");
+		   }
+		   waitMS(1);
+	   }
+	   count =0;
+	   Led::on();
+	   while (!Switch::isPressed())
+	   {
+		   count++;
+		   waitMS(1);
+	   }
+	   waitMS(2000);
+	   console.writeln(count);
+	   while(Switch::isPressed()) {};
+	   waitMS(1000);
+	   count=0;
+   }
+   return 0;
+}
